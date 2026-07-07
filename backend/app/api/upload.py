@@ -38,7 +38,7 @@ async def upload_video(file: UploadFile = File(...)):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     cap.release()
 
-    writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
+    writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*"avc1"), fps, (width, height))
 
     def on_frame(frame, frame_index):
         writer.write(frame)
