@@ -11,7 +11,7 @@ import time
 from app.ai.yolo_detector import YoloDetector
 from app.ai.abandoned_object import AbandonedObjectTracker
 from app.ai.face_detector import FaceDetector
-# from app.ai.fire_smoke_detector import FireSmokeDetector  # enable once you have weights
+from app.ai.fire_smoke_detector import FireSmokeDetector
 
 PROCESS_EVERY_N_FRAMES = 3  # skip frames for speed; raise for weaker hardware
 
@@ -21,7 +21,7 @@ class VideoProcessor:
         self.yolo = YoloDetector()
         self.abandoned_tracker = AbandonedObjectTracker()
         self.face_detector = FaceDetector()
-        # self.fire_smoke = FireSmokeDetector()  # enable once you have weights
+        self.fire_smoke = FireSmokeDetector()
 
     def process_source(self, source, on_frame=None, on_alert=None, max_frames=None, verbose=False):
         """
@@ -71,16 +71,29 @@ class VideoProcessor:
                               f"(conf={det['confidence']}, class_id={det.get('class_id')})")
 
                 abandoned_alerts = self.abandoned_tracker.update(detections, current_time)
-                # fire_smoke_detections = self.fire_smoke.detect(frame)
+                fire_smoke_detections = self.fire_smoke.detect(frame)
+                
+                # Immediately alert on fire/smoke
+                fire_smoke_alerts = []
+                for det in fire_smoke_detections:
+                    fire_smoke_alerts.append({
+                        "object_id": None,
+                        "label": det["label"],
+                        "message": f"DANGER: {det['label'].upper()} DETECTED",
+                        "frame_index": frame_index,
+                        "video_time_seconds": round(current_time, 1)
+                    })
 
-                for alert in abandoned_alerts:
-                    alert["frame_index"] = frame_index
-                    alert["video_time_seconds"] = round(current_time, 1)
+                for alert in abandoned_alerts + fire_smoke_alerts:
+                    if "frame_index" not in alert:
+                        alert["frame_index"] = frame_index
+                    if "video_time_seconds" not in alert:
+                        alert["video_time_seconds"] = round(current_time, 1)
                     all_alerts.append(alert)
                     if on_alert:
                         on_alert(alert)
 
-                frame = self._draw_boxes(frame, detections + faces)
+                frame = self._draw_boxes(frame, detections + faces + fire_smoke_detections)
 
             if on_frame:
                 on_frame(frame, frame_index)

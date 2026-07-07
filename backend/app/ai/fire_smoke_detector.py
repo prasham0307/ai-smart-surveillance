@@ -26,12 +26,12 @@ FIRE_SMOKE_WEIGHTS_PATH = "weights/fire_smoke_yolov8.pt"  # place your model her
 
 
 class FireSmokeDetector:
-    def __init__(self, weights_path: str = FIRE_SMOKE_WEIGHTS_PATH, conf_threshold: float = 0.5):
+    def __init__(self, weights_path: str = FIRE_SMOKE_WEIGHTS_PATH, conf_threshold: float = 0.25):
         self.model = YOLO(weights_path)
         self.conf_threshold = conf_threshold
         # Fire/smoke datasets commonly label classes as below - confirm
         # against your chosen model's data.yaml and adjust if needed.
-        self.class_names = {0: "fire", 1: "smoke"}
+        self.class_names = {0: "smoke", 1: "fire"}
 
     def detect(self, frame):
         results = self.model(frame, conf=self.conf_threshold, verbose=False)[0]
