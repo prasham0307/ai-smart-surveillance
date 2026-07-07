@@ -104,8 +104,9 @@ class AbandonedObjectTracker:
             stationary_duration = now - tracked.last_moved_at
             time_since_person = now - tracked.last_person_nearby_at
 
-            print(f"[TRACK] id={tracked.id} label={tracked.label} "
-                  f"stationary={stationary_duration:.1f}s no_person={time_since_person:.1f}s")
+            # Uncomment for detailed tracker debug:
+            # print(f"[TRACK] id={tracked.id} label={tracked.label} "
+            #       f"stationary={stationary_duration:.1f}s no_person={time_since_person:.1f}s")
 
             if (
                 stationary_duration > STATIONARY_SECONDS

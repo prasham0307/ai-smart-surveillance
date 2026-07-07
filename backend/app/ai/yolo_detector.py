@@ -37,7 +37,8 @@ class YoloDetector:
             class_id = int(box.cls[0])
             confidence = float(box.conf[0])
             x1, y1, x2, y2 = box.xyxy[0].tolist()
-            print(f"[RAW] class_id={class_id}, name={self.model.names[class_id]}, conf={confidence:.2f}")
+            # Uncomment for detailed frame-by-frame debug:
+            # print(f"[RAW] class_id={class_id}, name={self.model.names[class_id]}, conf={confidence:.2f}")
 
             if class_id == PERSON_CLASS_ID:
                 label = "person"
