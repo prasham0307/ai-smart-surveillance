@@ -15,7 +15,7 @@ VEHICLE_CLASS_IDS = {2: "car", 3: "motorcycle", 5: "bus", 7: "truck"}
 BAG_CLASS_IDS = {24: "backpack", 26: "handbag", 28: "suitcase", 25: "umbrella", 75: "vase"}
 
 class YoloDetector:
-    def __init__(self, weights_path: str = "yolov8n.pt", conf_threshold: float = 0.4):
+    def __init__(self, weights_path: str = "yolov8n.pt", conf_threshold: float = 0.30):
         """
         weights_path: 'yolov8n.pt' auto-downloads the small pretrained model
         on first run (needs internet). Swap to yolov8s/m for better accuracy

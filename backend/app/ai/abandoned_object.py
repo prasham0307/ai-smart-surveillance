@@ -24,7 +24,7 @@ BAG_CLASS_IDS = {24: "backpack", 26: "handbag", 28: "suitcase", 25: "umbrella", 
 STATIONARY_SECONDS = 10       # how long an object must stay still to count as abandoned
 STATIONARY_RADIUS_PX = 25     # how much movement is tolerated as "still"
 NEAR_DISTANCE_PX = 150        # how close a person must be to "claim" the object
-GRACE_PERIOD_SECONDS = 3      # keep tracking an object through brief detection gaps
+GRACE_PERIOD_SECONDS = 5      # keep tracking an object through brief detection gaps
                                # (flaky confidence shouldn't reset the stationary timer)
 
 
