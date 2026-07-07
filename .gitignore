@@ -1,0 +1,24 @@
+# Virtual environments
+backend/venv/
+venv/
+env/
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Model weights
+*.pt
+*.onnx
+
+# Large video files and logs
+*.mp4
+*.avi
+*.mkv
+debug_log.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db

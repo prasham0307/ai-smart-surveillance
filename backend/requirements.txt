@@ -1,0 +1,12 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+ultralytics==8.3.0          # YOLOv8
+opencv-python==4.10.0.84
+mediapipe==0.10.14          # Face detection (demo)
+numpy==1.26.4
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.9      # PostgreSQL driver
+pydantic==2.9.2
+python-dotenv==1.0.1
+websockets==13.1
