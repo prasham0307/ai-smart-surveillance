@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-dark-bg: #0f1115;
-  --color-dark-card: rgba(25, 28, 36, 0.7);
   --color-alert-fire: #ef4444;
   --color-alert-abandoned: #f59e0b;
   --color-accent: #3b82f6;
@@ -11,18 +11,13 @@
 }
 
 body {
-  background-color: var(--color-dark-bg);
-  color: #f3f4f6;
+  @apply bg-gray-50 text-gray-900 dark:bg-[#0a0a0a] dark:text-gray-100 transition-colors duration-300;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .glass-panel {
-  background: var(--color-dark-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  @apply bg-white dark:bg-[#141414] border border-gray-200 dark:border-white/5 shadow-md dark:shadow-xl transition-colors duration-300;
 }
 
 /* Custom Scrollbar */

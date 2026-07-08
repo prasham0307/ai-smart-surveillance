@@ -22,6 +22,7 @@ class VideoProcessor:
         self.abandoned_tracker = AbandonedObjectTracker()
         self.face_detector = FaceDetector()
         self.fire_smoke = FireSmokeDetector()
+        self.last_fire_alert_time = 0
 
     def process_source(self, source, on_frame=None, on_alert=None, max_frames=None, verbose=False):
         """
@@ -73,9 +74,11 @@ class VideoProcessor:
                 abandoned_alerts = self.abandoned_tracker.update(detections, current_time)
                 fire_smoke_detections = self.fire_smoke.detect(frame)
                 
-                # Immediately alert on fire/smoke
+                # Immediately alert on fire/smoke, but with a 3-second cooldown to prevent spam
                 fire_smoke_alerts = []
-                for det in fire_smoke_detections:
+                if fire_smoke_detections and (current_time - self.last_fire_alert_time) > 3.0:
+                    self.last_fire_alert_time = current_time
+                    det = fire_smoke_detections[0] # Just use the highest confidence one for the alert
                     fire_smoke_alerts.append({
                         "object_id": None,
                         "label": det["label"],
@@ -91,7 +94,7 @@ class VideoProcessor:
                         alert["video_time_seconds"] = round(current_time, 1)
                     all_alerts.append(alert)
                     if on_alert:
-                        on_alert(alert)
+                        on_alert(alert, frame)
 
                 frame = self._draw_boxes(frame, detections + faces + fire_smoke_detections)
 

@@ -34,7 +34,12 @@ async def webcam_feed(websocket: WebSocket):
     def on_frame(frame, frame_index):
         asyncio.run_coroutine_threadsafe(send_frame(frame, frame_index), loop)
 
-    def on_alert(alert):
+    def on_alert(alert, frame):
+        # Generate a small thumbnail from the frame
+        small_frame = cv2.resize(frame, (320, 240))
+        _, buffer = cv2.imencode(".jpg", small_frame)
+        b64_thumb = base64.b64encode(buffer).decode("utf-8")
+        alert["thumbnail"] = b64_thumb
         asyncio.run_coroutine_threadsafe(send_alert(alert), loop)
 
     try:

@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 
-export default function CustomVideoPlayer({ src }) {
+const CustomVideoPlayer = forwardRef(({ src }, ref) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -13,6 +13,16 @@ export default function CustomVideoPlayer({ src }) {
   // bypassing the OpenCV 'moov atom at the end of file' HTTP streaming issue.
   const [blobUrl, setBlobUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useImperativeHandle(ref, () => ({
+    seekTo: (timeInSeconds) => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = timeInSeconds;
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  }));
 
   useEffect(() => {
     setIsLoading(true);
@@ -138,4 +148,6 @@ export default function CustomVideoPlayer({ src }) {
       </div>
     </div>
   );
-}
+});
+
+export default CustomVideoPlayer;

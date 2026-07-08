@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Activity, Flame, PackageOpen, AlertTriangle, Clock, Radio, PowerOff, ShieldCheck } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export default function LiveCamera() {
+  const { addToast } = useToast();
   const [isConnected, setIsConnected] = useState(false);
   const [latestFrame, setLatestFrame] = useState(null);
   const [alerts, setAlerts] = useState([]);
@@ -9,9 +11,18 @@ export default function LiveCamera() {
   const wsRef = useRef(null);
   const alertsEndRef = useRef(null);
 
-  // Auto-scroll alerts
+  // Auto-scroll alerts only if the user hasn't manually scrolled up
   useEffect(() => {
-    alertsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = alertsEndRef.current?.parentElement;
+    if (container) {
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      if (isNearBottom) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }
   }, [alerts]);
 
   const connectWebSocket = () => {
@@ -36,6 +47,8 @@ export default function LiveCamera() {
       } else if (data.type === 'alert') {
         // Append new alert
         setAlerts((prev) => [...prev, data]);
+        // Trigger global toast
+        addToast(`${data.label.toUpperCase()} DETECTED! Check live feed immediately.`, 'alert');
       }
     };
 
@@ -82,11 +95,11 @@ export default function LiveCamera() {
     switch (label.toLowerCase()) {
       case 'fire':
       case 'smoke':
-        return 'border-red-500/30 bg-red-500/10 text-red-200';
+        return 'border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-200';
       case 'abandoned object':
-        return 'border-amber-500/30 bg-amber-500/10 text-amber-200';
+        return 'border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-200';
       default:
-        return 'border-yellow-500/30 bg-yellow-500/10 text-yellow-200';
+        return 'border-yellow-500/30 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-200';
     }
   };
 
@@ -96,17 +109,17 @@ export default function LiveCamera() {
       {/* Live Video Section */}
       <div className="flex-1 flex flex-col space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {isConnected ? (
               <Radio className="text-red-500 animate-pulse" />
             ) : (
-              <Activity className="text-gray-500" />
+              <Activity className="text-gray-400 dark:text-gray-500" />
             )}
             Live Camera Feed
           </h2>
           <div className="flex items-center gap-4">
             {isConnected && (
-              <span className="glass-panel px-4 py-1.5 rounded-full text-sm font-medium text-gray-300">
+              <span className="glass-panel px-4 py-1.5 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300">
                 {framesProcessed} Frames Processed
               </span>
             )}
@@ -115,7 +128,7 @@ export default function LiveCamera() {
               onClick={isConnected ? disconnectWebSocket : connectWebSocket}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                 isConnected 
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' 
+                  ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20' 
                   : 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
               }`}
             >
@@ -132,7 +145,7 @@ export default function LiveCamera() {
           </div>
         </div>
 
-        <div className="glass-panel rounded-2xl overflow-hidden aspect-video border border-white/10 shadow-2xl relative bg-black flex items-center justify-center">
+        <div className="glass-panel rounded-2xl overflow-hidden aspect-video border border-gray-200 dark:border-white/10 shadow-2xl relative bg-gray-100 dark:bg-black flex items-center justify-center">
           {isConnected ? (
             latestFrame ? (
               <img 
@@ -141,7 +154,7 @@ export default function LiveCamera() {
                 className="w-full h-full object-contain"
               />
             ) : (
-              <div className="flex flex-col items-center gap-3 text-gray-400 animate-pulse">
+              <div className="flex flex-col items-center gap-3 text-gray-500 dark:text-gray-400 animate-pulse">
                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 <p>Connecting to camera & AI engine...</p>
               </div>
@@ -164,8 +177,8 @@ export default function LiveCamera() {
       {/* Live Alerts Timeline */}
       <div className="w-full lg:w-96 flex flex-col space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Live Incident Log</h2>
-          <span className={`${alerts.length > 0 ? 'bg-red-500 animate-pulse-fast' : 'bg-gray-700'} text-white text-xs font-bold px-2.5 py-1 rounded-full transition-colors`}>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Incident Log</h2>
+          <span className={`${alerts.length > 0 ? 'bg-red-500 animate-pulse-fast text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white'} text-xs font-bold px-2.5 py-1 rounded-full transition-colors`}>
             {alerts.length} Alerts
           </span>
         </div>
@@ -187,12 +200,18 @@ export default function LiveCamera() {
                 <div key={idx} className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active animate-in fade-in slide-in-from-top-2 duration-300`}>
                   
                   {/* Icon */}
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-[#0f1115] bg-gray-800 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 ${getAlertColor(alert.label)}`}>
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0f1115] bg-gray-50 dark:bg-gray-800 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 ${getAlertColor(alert.label)}`}>
                     {getAlertIcon(alert.label)}
                   </div>
                   
                   {/* Card */}
-                  <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border ${getAlertColor(alert.label)} backdrop-blur-md`}>
+                  <div 
+                    className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border ${getAlertColor(alert.label)} backdrop-blur-md cursor-pointer transition-all hover:scale-[1.02]`}
+                    onClick={(e) => {
+                      const img = e.currentTarget.querySelector('img');
+                      if (img) img.classList.toggle('hidden');
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold uppercase tracking-wider text-xs">
                         {alert.label}
@@ -203,6 +222,15 @@ export default function LiveCamera() {
                       </span>
                     </div>
                     <p className="text-sm opacity-90">{alert.message}</p>
+                    
+                    {/* Expandable Thumbnail */}
+                    {alert.thumbnail && (
+                      <img 
+                        src={`data:image/jpeg;base64,${alert.thumbnail}`}
+                        alt="Threat snapshot" 
+                        className="w-full mt-3 rounded-lg border border-white/20 hidden transition-all"
+                      />
+                    )}
                   </div>
                 </div>
               ))}

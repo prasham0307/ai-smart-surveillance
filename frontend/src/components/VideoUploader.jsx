@@ -1,5 +1,63 @@
-import { useState, useRef } from 'react';
-import { UploadCloud, FileVideo, AlertCircle, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { UploadCloud, FileVideo, AlertCircle, Loader2, Terminal } from 'lucide-react';
+
+function TerminalScroller() {
+  const [logs, setLogs] = useState([]);
+  
+  const mockLogs = [
+    "[SYSTEM] Initiating DeepMind Video Processor...",
+    "[WORKER] Extracting raw frames from video stream...",
+    "[AI_ENGINE] Loading YOLOv8 weights for object detection...",
+    "[AI_ENGINE] Loading Fire/Smoke fine-tuned weights...",
+    "[PIPELINE] Processing frame batch 1-250...",
+    "[TRACKER] Applying 5s grace-period logic to stationary objects...",
+    "[PIPELINE] Processing frame batch 251-500...",
+    "[ANALYSIS] Threat analysis complete. Rendering bounding boxes...",
+    "[ENCODER] Compressing annotated MP4 file...",
+    "[SYSTEM] Uploading results to dashboard..."
+  ];
+
+  useEffect(() => {
+    let currentIndex = 0;
+    let batchNumber = 500;
+    setLogs([mockLogs[0]]);
+    
+    const interval = setInterval(() => {
+      currentIndex++;
+      if (currentIndex < mockLogs.length) {
+        setLogs(prev => [...prev.slice(-9), mockLogs[currentIndex]]);
+      } else {
+        // Infinite loop for long CPU processing times
+        batchNumber += 250;
+        setLogs(prev => [...prev.slice(-9), `[PIPELINE] Processing frame batch ${batchNumber - 249}-${batchNumber}...`]);
+      }
+    }, 2500);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="glass-panel w-full max-w-xl rounded-2xl p-8 flex flex-col space-y-6 bg-[#0a0a0a]">
+      <div className="flex items-center gap-3 mb-2 border-b border-white/10 pb-4">
+        <Terminal className="text-blue-400" />
+        <h3 className="text-lg font-bold text-white">AI Analysis in Progress</h3>
+      </div>
+      
+      <div className="flex-1 font-mono text-sm space-y-2 h-48 overflow-y-hidden relative">
+        {logs.map((log, i) => (
+          <div key={i} className={`animate-in fade-in slide-in-from-bottom-2 ${i === logs.length - 1 ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
+            <span className="text-green-500/70 mr-2">❯</span> {log}
+          </div>
+        ))}
+        {logs.length < mockLogs.length && (
+          <div className="text-blue-400 animate-pulse mt-2">
+            <span className="text-green-500/70 mr-2">❯</span> _
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function VideoUploader({ onUploadSuccess, isProcessing, setIsProcessing }) {
   const [dragActive, setDragActive] = useState(false);
@@ -70,27 +128,14 @@ export default function VideoUploader({ onUploadSuccess, isProcessing, setIsProc
   };
 
   if (isProcessing) {
-    return (
-      <div className="glass-panel w-full max-w-xl rounded-2xl p-12 flex flex-col items-center justify-center space-y-6">
-        <div className="relative">
-          <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full animate-pulse"></div>
-          <Loader2 size={64} className="text-blue-400 animate-spin relative z-10" />
-        </div>
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-white mb-2">Analyzing Footage...</h3>
-          <p className="text-gray-400 text-sm">
-            Running DeepMind YOLOv8 engine. This may take a minute depending on video length.
-          </p>
-        </div>
-      </div>
-    );
+    return <TerminalScroller />;
   }
 
   return (
-    <div className="w-full max-w-xl">
+    <div className="w-full max-w-xl mx-auto">
       <div 
         className={`glass-panel w-full rounded-2xl p-8 border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center min-h-[300px] cursor-pointer
-          ${dragActive ? 'border-blue-500 bg-blue-500/5' : 'border-white/10 hover:border-white/30 hover:bg-white/5'}
+          ${dragActive ? 'border-blue-500 bg-blue-500/5' : 'border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5'}
           ${file ? 'border-green-500/50 bg-green-500/5' : ''}
         `}
         onDragEnter={handleDrag}
@@ -119,12 +164,12 @@ export default function VideoUploader({ onUploadSuccess, isProcessing, setIsProc
           </div>
         ) : (
           <div className="flex flex-col items-center text-center space-y-4 pointer-events-none">
-            <div className="p-4 bg-blue-500/10 rounded-full text-blue-400">
+            <div className="p-4 bg-blue-500/10 rounded-full text-blue-500 dark:text-blue-400">
               <UploadCloud size={48} />
             </div>
             <div>
-              <p className="text-white font-medium text-lg mb-1">Click or drag video to upload</p>
-              <p className="text-gray-400 text-sm">Supports MP4, AVI, MKV up to 50MB</p>
+              <p className="text-gray-900 dark:text-white font-medium text-lg mb-1">Click or drag video to upload</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Supports MP4, AVI, MKV up to 50MB</p>
             </div>
           </div>
         )}

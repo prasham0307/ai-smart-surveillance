@@ -43,7 +43,9 @@ async def upload_video(file: UploadFile = File(...)):
     def on_frame(frame, frame_index):
         writer.write(frame)
 
-    result = processor.process_source(input_path, on_frame=on_frame)
+    import asyncio
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, lambda: processor.process_source(input_path, on_frame=on_frame))
     writer.release()
 
     return JSONResponse({
