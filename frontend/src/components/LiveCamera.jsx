@@ -83,6 +83,7 @@ export default function LiveCamera() {
     switch (label.toLowerCase()) {
       case 'fire':
       case 'smoke':
+      case 'fire-smoke':
         return <Flame size={18} className="text-red-500" />;
       case 'abandoned object':
         return <PackageOpen size={18} className="text-amber-500" />;
@@ -95,6 +96,7 @@ export default function LiveCamera() {
     switch (label.toLowerCase()) {
       case 'fire':
       case 'smoke':
+      case 'fire-smoke':
         return 'border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-200';
       case 'abandoned object':
         return 'border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-200';
