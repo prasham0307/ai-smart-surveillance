@@ -1,6 +1,8 @@
 import { ShieldCheck, Video, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function DashboardOverview({ setActiveMode }) {
+export default function DashboardOverview() {
+  const navigate = useNavigate();
   const stats = [
     { label: 'System Health', value: 'Optimal', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10 border-green-500/20' },
     { label: 'Active Cameras', value: '1', icon: Video, color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500/20' },
@@ -18,13 +20,13 @@ export default function DashboardOverview({ setActiveMode }) {
         </div>
         <div className="flex gap-4">
           <button 
-            onClick={() => setActiveMode('upload')}
+            onClick={() => navigate('/upload')}
             className="px-6 py-2.5 rounded-xl text-sm font-bold bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-900 dark:text-white transition-colors"
           >
             Upload Footage
           </button>
           <button 
-            onClick={() => setActiveMode('live')}
+            onClick={() => navigate('/live')}
             className="px-6 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]"
           >
             Open Live Camera

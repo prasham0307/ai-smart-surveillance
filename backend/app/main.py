@@ -6,9 +6,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.staticfiles import StaticFiles
-from app.api import upload, detections, live
+from contextlib import asynccontextmanager
+from app.api import upload, detections, live, auth, cameras, incidents
+from app.core.database import SessionLocal
+from app.core.init_db import init_db
 
-app = FastAPI(title="AI Smart Surveillance System", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db = SessionLocal()
+    init_db(db)
+    db.close()
+    yield
+
+app = FastAPI(title="AI Smart Surveillance System", version="0.1.0", lifespan=lifespan)
 
 # Allow the React/Next.js frontend (running on a different port) to call this API
 app.add_middleware(
@@ -21,6 +31,9 @@ app.add_middleware(
 app.include_router(upload.router, prefix="/api/videos", tags=["Videos"])
 app.include_router(detections.router, prefix="/api/detections", tags=["Detections"])
 app.include_router(live.router, prefix="/api/live", tags=["Live Camera"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(cameras.router, prefix="/api/cameras", tags=["Cameras"])
+app.include_router(incidents.router, prefix="/api/incidents", tags=["Incidents"])
 
 # Mount outputs directory so frontend can access the annotated videos
 import os

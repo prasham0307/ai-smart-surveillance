@@ -82,6 +82,7 @@ class VideoProcessor:
                     fire_smoke_alerts.append({
                         "object_id": None,
                         "label": det["label"],
+                        "confidence": det.get("confidence", 1.0),
                         "message": f"DANGER: {det['label'].upper()} DETECTED",
                         "frame_index": frame_index,
                         "video_time_seconds": round(current_time, 1)
@@ -92,6 +93,8 @@ class VideoProcessor:
                         alert["frame_index"] = frame_index
                     if "video_time_seconds" not in alert:
                         alert["video_time_seconds"] = round(current_time, 1)
+                    if "confidence" not in alert:
+                        alert["confidence"] = 1.0
                     all_alerts.append(alert)
                     if on_alert:
                         on_alert(alert, frame)

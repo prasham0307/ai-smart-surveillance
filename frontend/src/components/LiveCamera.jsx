@@ -1,14 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Activity, Flame, PackageOpen, AlertTriangle, Clock, Radio, PowerOff, ShieldCheck } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
+import { useLiveStream } from '../context/LiveStreamContext';
 
 export default function LiveCamera() {
-  const { addToast } = useToast();
-  const [isConnected, setIsConnected] = useState(false);
-  const [latestFrame, setLatestFrame] = useState(null);
-  const [alerts, setAlerts] = useState([]);
-  const [framesProcessed, setFramesProcessed] = useState(0);
-  const wsRef = useRef(null);
+  const {
+    cameras,
+    selectedCameraId,
+    setSelectedCameraId,
+    isConnected,
+    latestFrame,
+    alerts,
+    framesProcessed,
+    connectWebSocket,
+    disconnectWebSocket
+  } = useLiveStream();
+
   const alertsEndRef = useRef(null);
 
   // Auto-scroll alerts only if the user hasn't manually scrolled up
@@ -24,60 +30,6 @@ export default function LiveCamera() {
       }
     }
   }, [alerts]);
-
-  const connectWebSocket = () => {
-    if (wsRef.current) return;
-    
-    // Connect to FastAPI WebSocket
-    const ws = new WebSocket('ws://localhost:8000/api/live/webcam');
-    
-    ws.onopen = () => {
-      setIsConnected(true);
-      setAlerts([]);
-      setFramesProcessed(0);
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      
-      if (data.type === 'frame') {
-        // data.data is the base64 JPEG string
-        setLatestFrame(`data:image/jpeg;base64,${data.data}`);
-        setFramesProcessed(data.frame_index);
-      } else if (data.type === 'alert') {
-        // Append new alert
-        setAlerts((prev) => [...prev, data]);
-        // Trigger global toast
-        addToast(`${data.label.toUpperCase()} DETECTED! Check live feed immediately.`, 'alert');
-      }
-    };
-
-    ws.onclose = () => {
-      setIsConnected(false);
-      wsRef.current = null;
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket Error:', error);
-      setIsConnected(false);
-    };
-
-    wsRef.current = ws;
-  };
-
-  const disconnectWebSocket = () => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-  };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnectWebSocket();
-    };
-  }, []);
 
   const getAlertIcon = (label) => {
     switch (label.toLowerCase()) {
@@ -120,6 +72,18 @@ export default function LiveCamera() {
             Live Camera Feed
           </h2>
           <div className="flex items-center gap-4">
+            {!isConnected && (
+              <select 
+                value={selectedCameraId}
+                onChange={(e) => setSelectedCameraId(e.target.value)}
+                className="bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="0">Default Webcam (0)</option>
+                {cameras.map(cam => (
+                  <option key={cam.id} value={cam.id}>{cam.name}</option>
+                ))}
+              </select>
+            )}
             {isConnected && (
               <span className="glass-panel px-4 py-1.5 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300">
                 {framesProcessed} Frames Processed
@@ -165,12 +129,7 @@ export default function LiveCamera() {
             <div className="flex flex-col items-center gap-4 text-gray-500">
               <Radio size={48} className="opacity-50" />
               <p className="text-lg">Camera is currently offline</p>
-              <button 
-                onClick={connectWebSocket}
-                className="text-blue-400 hover:text-blue-300 text-sm font-medium underline underline-offset-4"
-              >
-                Click to start
-              </button>
+              <p className="text-sm">Select a camera above and start the stream.</p>
             </div>
           )}
         </div>
